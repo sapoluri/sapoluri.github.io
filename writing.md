@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Writings
-permalink: /writings/
+title: Writing
+permalink: /writing/
 ---
 
 ## List of writings
 
-[A Diamond Blob Space Program]({{ '/writings/space-travel' | relative_url }})
+[A Diamond Blob Space Program]({{ '/writing/space-travel' | relative_url }})
 [← Back to Home]({{ '/' | relative_url }})
