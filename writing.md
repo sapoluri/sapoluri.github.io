@@ -7,3 +7,4 @@ permalink: /writing/
 ## List of writings
 
 [A Diamond Blob Space Program]({{ '/writing/space-travel' | relative_url }})
+[State Estimation Series]({{ '/writing/state-estimation' | relative_url }})
