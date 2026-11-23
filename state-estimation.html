@@ -1,0 +1,891 @@
+---
+layout: none
+permalink: /writing/state-estimation/
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="light dark"/>
+<link rel="icon" href="data:,"/>
+<title>State Estimation — The Series • Part 1: You Are Already a State Estimator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Public+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFEF9; --bg2:#FFF6E9; --ink:#182230; --muted:#5E6B7E; --line:#E8DFCE; --card:#FFFFFF; --card2:#FFF9EC;
+  --teal:#0F766E; --teal-bg:#CCFBF1; --orange:#EA580C; --orange-bg:#FFEDD5; --blue:#1E40AF; --blue-bg:#DBEAFE; --amber:#D97706;
+  --shadow:0 12px 32px rgba(24,34,48,.09);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0F151E; --bg2:#131D2A; --ink:#EAF0F7; --muted:#9AA8BC; --line:#263244; --card:#182232; --card2:#1B2739; --teal:#2DD4BF; --teal-bg:#134E4A; --orange:#FB923C; --orange-bg:#431407; --blue:#93C5FD; --blue-bg:#1E3A5F; --shadow:0 12px 32px rgba(0,0,0,.35);}
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Public Sans",system-ui,sans-serif;line-height:1.65}
+a{color:var(--teal)}
+button,[role="button"],select,input{ min-height:44px}
+.wrap{max-width:1020px;margin:0 auto;padding:0 20px 72px}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:18px 0 8px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.topbar b{color:var(--ink);letter-spacing:.02em;text-transform:none;font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:13px;font-weight:700}
+.hero{padding:28px 0 10px}
+.hero h1{font-family:"DM Serif Display",serif;font-weight:400;font-size:clamp(44px,7vw,76px);line-height:.92;letter-spacing:-.02em;margin:14px 0 16px;max-width:820px}
+.hero h1 em{color:var(--teal);font-style:italic}
+.lede{font-size:clamp(18px,2.4vw,22px);line-height:1.5;color:var(--muted);max-width:720px}
+.lede strong{color:var(--ink)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 6px}
+.storybox{margin:26px 0;background:var(--ink);color:#FFF7E6;border-radius:20px;padding:24px 24px 20px;position:relative;overflow:hidden}
+@media(prefers-color-scheme:dark){.storybox{background:#E8DFCE;color:#182230}}
+.storybox p{font-size:18px;line-height:1.6;margin:8px 0}
+.storybox .big{font-family:"DM Serif Display",serif;font-size:28px;line-height:1.15}
+h2{font-family:"DM Serif Display",serif;font-weight:400;font-size:clamp(32px,4.5vw,46px);line-height:1.05;margin:54px 0 12px;letter-spacing:-.01em}
+h3{font-size:19px;line-height:1.3;margin:28px 0 8px}
+p{font-size:17px}
+.small{font-size:14px;color:var(--muted)} .mono{font-family:"JetBrains Mono",monospace;font-size:.92em}
+.section-label{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--teal);margin-top:48px}
+/* roadmap */
+.roadmap{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 8px}
+@media(max-width:760px){.roadmap{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.roadmap{grid-template-columns:1fr}}
+.part{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.part.live{border:2px solid var(--teal);background:var(--card2)}
+.part .num{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--muted)}
+.part h4{margin:6px 0 6px;font-size:17px;line-height:1.25}
+.part p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+.badge{display:inline-block;margin-top:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:5px 8px;border-radius:999px;background:var(--teal-bg);color:var(--teal)}
+.badge.soon{background:var(--bg2);color:var(--muted);border:1px solid var(--line)}
+.dots{color:var(--amber);letter-spacing:2px;font-size:13px}
+/* article */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+.callout{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:18px}
+.callout strong{color:var(--teal)}
+.formula{background:var(--ink);color:#FFFBEB;border-radius:16px;padding:20px;text-align:center;margin:18px 0}
+@media(prefers-color-scheme:dark){.formula{background:#FFF6E9;color:#182230}}
+.formula .eq{font-family:"JetBrains Mono",monospace;font-size:clamp(15px,2.6vw,20px);font-weight:700;line-height:1.6}
+.formula .note{font-size:13px;opacity:.75}
+.lab{background:var(--card);border:1.5px solid var(--ink);border-radius:20px;padding:18px;box-shadow:6px 6px 0 var(--teal-bg);margin:22px 0}
+.lab-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:start}
+.lab h3{margin:0;font-size:20px} .lab p{font-size:15px;color:var(--muted)}
+canvas{width:100%;height:auto;display:block;background:var(--bg2);border-radius:12px;border:1px solid var(--line)}
+.controls{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
+.control{flex:1;min-width:160px}
+.control label{display:flex;justify-content:space-between;font-size:13px;font-weight:800;letter-spacing:.02em;margin-bottom:4px}
+.control label output{font-family:"JetBrains Mono",monospace;color:var(--teal)}
+input[type=range]{width:100%;accent-color:var(--teal);min-height:36px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 14px;border-radius:999px;font-weight:800;font-size:14px;cursor:pointer}
+.btn.primary{background:var(--teal);color:white;border-color:var(--teal)}
+.btn.orange{background:var(--orange);color:white;border-color:var(--orange)}
+.btn.active{background:var(--ink);color:var(--bg)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+@media(max-width:560px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--bg2);border-radius:12px;padding:12px}
+.stat b{display:block;font-size:22px;line-height:1;font-family:"JetBrains Mono",monospace}
+.stat span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;font-weight:700;margin-top:10px}
+.legend i{display:inline-block;width:22px;height:4px;border-radius:99px;vertical-align:middle;margin-right:6px}
+.readout{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--blue-bg);font-size:15px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+@media(max-width:700px){.steps{grid-template-columns:1fr}}
+.step{padding:18px;border-radius:16px;color:white}
+.step:nth-child(1){background:#0F766E}.step:nth-child(2){background:#EA580C}.step:nth-child(3){background:#1E40AF}
+.step b{font-size:28px;display:block} .step p{color:rgba(255,255,255,.9);font-size:14px;margin:4px 0 0}
+table{width:100%;border-collapse:collapse;font-size:15px;margin:14px 0} th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top} th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.quiz{border:1px solid var(--line);border-radius:16px;padding:6px 18px 18px;background:var(--card)}
+.quiz button{width:100%;text-align:left;margin:6px 0}
+.feedback{font-size:15px;padding:10px 12px;border-radius:10px;background:var(--bg2);display:none}
+.next{background:linear-gradient(135deg,var(--teal),#155E63);color:white;border-radius:20px;padding:24px;margin-top:28px}
+.next h3{color:white;margin-top:0;font-family:"DM Serif Display",serif;font-weight:400;font-size:30px}
+.next p{color:rgba(255,255,255,.9)}
+footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+blockquote{margin:20px 0;padding:4px 0 4px 18px;border-left:4px solid var(--orange);font-family:"DM Serif Display",serif;font-size:24px;line-height:1.3}
+.kbd-row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><b>✦ &nbsp;Estimation, Explained</b><span>Series Hub + Part 1</span></div>
+
+  <header class="hero">
+    <span class="pill">🧭 A 6-part series · Novice → Expert · No maths degree required</span>
+    <h1>You never know<br>where anything <em>really</em> is.</h1>
+    <div class="meta"><span class="pill">⏱ Part 1 · 12 min</span><span class="pill">🎮 2 playgrounds inside</span><span class="pill">🧮 One equation, learned properly</span><span class="pill">👀 Starts with catching a ball</span></div>
+  </header>
+
+  <div class="storybox">
+    <div style="font-size:12px;letter-spacing:.16em;font-weight:800">TRY THIS IN YOUR HEAD</div>
+    <p class="big">Someone throws you a ball. Halfway through its flight, you close your eyes.</p>
+    <p>You still reach out — and you still roughly catch it. You didn't <em>see</em> it land in your hand. You predicted where it would be, you felt a nudge when it brushed your fingers, and you corrected. Prediction + a noisy touch + a correction. Congratulations: you just ran the same loop that lands rockets and keeps a drone from drifting into a wall.</p>
+  </div>
+
+  <!-- HUB -->
+  <div class="section-label">The Series Map</div>
+  <h2 style="margin-top:8px">Six part series on state estimation.</h2>
+  <p>Every part uses the same recipe: a story you can picture, one idea done properly, and a playground you can break. Parts 2–6 are outlined here so you can see where Part 1 is heading — Part 1 is fully live below.</p>
+
+  <div class="roadmap">
+    <article class="part live"><div class="num">PART 01 · YOU ARE HERE</div><h4>You Are Already a State Estimator</h4><p>Hidden states, noisy glimpses, moving averages — and the one dial every filter in the world is secretly turning.</p><div class="dots">●○○○○ <span style="color:var(--muted);letter-spacing:0">Novice</span></div><br><span class="badge">● Reading now ↓</span></article>
+    <article class="part"><div class="num">PART 02</div><h4>The Kalman Filter</h4><p>Predict + correct with Gaussian blobs that grow and shrink. A live 1D tracker you can break with a terrible sensor.</p><div class="dots">●●○○○</div><br><span class="badge soon">Coming next</span></article>
+    <article class="part"><div class="num">PART 03</div><h4>When the World Isn't Straight</h4><p>EKF vs. UKF. Linearising around a curve, sigma points, and a robot trying to turn a corner without losing itself.</p><div class="dots">●●●○○</div><br><span class="badge soon">Planned</span></article>
+    <article class="part"><div class="num">PART 04</div><h4>When the World Isn't Bell-Shaped</h4><p>Particle filters &amp; the kidnapped robot. Why 1,000 dumb guesses can beat one very smart one.</p><div class="dots">●●●○○</div><br><span class="badge soon">Planned</span></article>
+    <article class="part"><div class="num">PART 05</div><h4>Remembering the Past</h4><p>Smoothing, factor graphs &amp; graph SLAM. Stop, rethink the <em>whole</em> trajectory — don't just fix the last step.</p><div class="dots">●●●●○</div><br><span class="badge soon">Planned</span></article>
+    <article class="part"><div class="num">PART 06</div><h4>Putting It Together</h4><p>Real sensor fusion: phones, drones &amp; multi-camera tracking. How to pick the right tool — and spot when it's lying.</p><div class="dots">●●●●● <span style="color:var(--muted);letter-spacing:0">Expert</span></div><br><span class="badge soon">Finale</span></article>
+  </div>
+  <p class="small">How to read it: if you're new, read straight through. If you already code filters, skim to <a href="#trust">§3 The Trust Dial</a> — that's the intuition the rest of the series hangs on.</p>
+
+  <!-- PART 1 -->
+  <div class="section-label" id="part1">Part 1 · Foundations</div>
+  <h2 style="margin-top:8px">You are already a state estimator</h2>
+  <p class="small">PART 1 OF 6 &nbsp;·&nbsp; STATE · MEASUREMENT · PREDICTION · THE BLEND</p>
+
+  <h3>1 &nbsp;·&nbsp; The state is hidden. It always is.</h3>
+  <p>Engineers use the word <strong>state</strong> for “the thing you actually care about, right now.” The position of a drone. The temperature inside a battery. Your speed, heading, and whether that pedestrian is about to step out.</p>
+  <p>The cruel bit: <strong>you almost never get to measure the state directly.</strong> You get clues.</p>
+  <div class="grid2">
+    <div class="callout"><strong>STATE — what you want</strong><br>“The ball is at <span class="mono">x = 42 cm</span>, moving at 3 m/s.”<br><br>Clean. Exact. <em>Unavailable.</em></div>
+    <div class="callout"><strong>MEASUREMENT — what you get</strong><br>“My eyes / GPS / encoder <em>says</em> 47 cm… give or take a lot.”<br><br>Noisy. Late. Sometimes flat-out wrong.</div>
+  </div>
+  <p>GPS jumps around a car park even when you're parked. A wheel encoder says you travelled 10 m — on a slippery floor, maybe you travelled 7. A camera sees a person in three frames, loses them behind a pillar, and sees them again. Estimation is what you do <em>between</em> the clues.</p>
+  <blockquote>Estimation isn't about knowing. It's about carrying a good guess — and knowing how good it is.</blockquote>
+  <p>That second half matters. A guess without an “I'm ± this much” attached is just confidence. A guess <em>with</em> uncertainty is something a system can act on safely: slow down when unsure, speed up when sure.</p>
+
+  <h3>2 &nbsp;·&nbsp; Your belief is a blob, not a dot</h3>
+  <p>Stop picturing your estimate as a single point. Picture it as a <strong>blob</strong>: a centre (your best guess) and a width (your uncertainty). Every prediction makes the blob wider — the world moves while you're not looking. Every decent measurement makes it narrower.</p>
+
+  <section class="lab" aria-label="Belief blob playground">
+    <div class="lab-head"><div><h3>🎮 Playground 1 — Grow &amp; shrink the blob</h3><p>The hidden truth is the dark dot. Press <b>Predict</b> a few times (time passes, you drift, uncertainty grows). Then <b>Peek</b> — a noisy measurement pulls you back.</p></div><span class="pill">LIVE DEMO</span></div>
+    <canvas id="beliefCanvas" width="920" height="300"></canvas>
+    <div class="btns">
+      <button class="btn" id="btnPredict">→ Predict (no peeking) ×1</button>
+      <button class="btn orange" id="btnMeasure">👀 Peek — take a measurement</button>
+      <button class="btn" id="btnResetBelief">↺ Reset blob</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><span>Best guess</span><b id="statMean">50.0</b></div>
+      <div class="stat"><span>Uncertainty ± σ</span><b id="statSigma">6.0</b></div>
+      <div class="stat"><span>Hidden truth</span><b id="statTrue">68</b></div>
+    </div>
+    <div class="readout" id="beliefReadout">Start here: you're fairly sure, but you're already wrong — your guess is 50, the truth is 68. Peeking helps. Predicting alone drifts you away.</div>
+  </section>
+
+  <p><strong>The memorable pattern:</strong> predict, predict, predict → big, vague blob. Measure → small, sharp blob. Every filter in this series — Kalman, particle, graph-based — is just a fancier way of doing <em>grow, shrink, grow, shrink</em> without losing track.</p>
+
+  <h3 id="trust">3 &nbsp;·&nbsp; The whole game is one dial: trust</h3>
+  <p>When a new measurement arrives, you have two opinions:</p>
+  <p>① <strong>Your prediction</strong> — “based on everything so far, it should be <em>here</em>.”<br>② <strong>The new measurement</strong> — “the sensor says it's <em>there</em>.”</p>
+  <p>They disagree. They always disagree. So you blend:</p>
+  <div class="formula">
+    <div class="eq">new estimate = prediction &nbsp;+&nbsp; K × ( measurement − prediction )</div>
+    <div class="note" style="margin-top:8px">K is your measurement trust dial · K = 0 → I don't trust the sensor measurement at all · K = 1 → irrespective of prediction, believe the sensor completely</div>
+  </div>
+  <p>That little <span class="mono">( measurement − prediction )</span> has a name you'll meet again in Part 2: the <strong>innovation</strong>, or residual — “how surprised am I?” Big surprise + high trust = big correction. Big surprise + low trust = “nice try, sensor, I barely moved.”</p>
+  <p>And here's the secret the rest of the series will unpack: <strong>a Kalman filter is just a machine that turns this dial automatically</strong>, based on how uncertain you are versus how noisy the sensor is. If you're very unsure and the sensor is good, K goes up. If you're confident and the sensor is junk, K goes down. That's it. That's the famous filter, in one sentence.</p>
+
+  <section class="lab" aria-label="Trust dial tracker playground">
+    <div class="lab-head"><div><h3>🎮 Playground 2 — The Trust Dial Tracker</h3><p>A target glides back and forth (dark line). A noisy sensor reports it (orange dots). Your estimator (teal) blends prediction + sensor using <b>your</b> K. Find the sweet spot — then try to break it.</p></div><span class="pill">TRY K = 0, THEN K = 1</span></div>
+    <canvas id="trackCanvas" width="920" height="340"></canvas>
+    <div class="legend"><span><i style="background:#182230"></i>Truth</span><span><i style="background:#EA580C"></i>Sensor (raw)</span><span><i style="background:#0F766E"></i>Your estimate</span><span><i style="background:#94A3B8"></i>8-point moving avg</span></div>
+    <div class="controls">
+      <div class="control"><label>Trust dial K <output id="kOut">0.35</output></label><input type="range" id="kSlider" min="0" max="1" step="0.05" value="0.35"></div>
+      <div class="control"><label>Sensor noise <output id="noiseOut">8</output></label><input type="range" id="noiseSlider" min="1" max="22" step="1" value="8"></div>
+      <div class="control"><label>Target speed <output id="speedOut">1.0×</output></label><input type="range" id="speedSlider" min="0.4" max="2.2" step="0.2" value="1"></div>
+    </div>
+    <div class="btns">
+      <button class="btn" data-k="0">K = 0 · Trust nothing</button>
+      <button class="btn" data-k="0.3">K = 0.3 · Cautious</button>
+      <button class="btn" data-k="0.65">K = 0.65 · Responsive</button>
+      <button class="btn" data-k="1">K = 1 · Trust everything</button>
+      <button class="btn primary" id="btnPause">⏸ Pause</button>
+      <button class="btn" id="btnResetTrack">↺ Restart</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><span>Raw sensor error</span><b id="rmseRaw">—</b></div>
+      <div class="stat"><span>Your filtered error</span><b id="rmseEst">—</b></div>
+      <div class="stat"><span>Verdict</span><b id="verdict" style="font-size:16px;font-family:'Public Sans',sans-serif;padding-top:4px">Warming up…</b></div>
+    </div>
+    <div class="readout" id="trackReadout"><strong>What to notice:</strong> K too low → smooth but always <em>late</em> (lag). K too high → fast but <em>jittery</em> — you're just copying the noise. The best K lives in the middle, and it moves when the noise moves. Try cranking sensor noise to max and re-tuning K.</div>
+  </section>
+
+  <h3>4 &nbsp;·&nbsp; The humble average was a filter all along</h3>
+  <p>Before fancy filters, there was the moving average: “average the last 8 readings.” It works — noise cancels out — until the thing you're tracking actually <em>moves</em>. Then the average is always describing where it <em>was</em>. In Playground 2, watch the grey line: beautifully smooth, permanently behind on every turn.</p>
+  <p>The fix is to weight recent readings more. That's <strong>exponential smoothing</strong> — and look closely, it's exactly our blend formula with a fixed K:</p>
+  <div class="formula"><div class="eq">estimate ← estimate + K × ( new reading − estimate )</div><div class="note" style="margin-top:6px">Same equation. K here is often called α (alpha). Part 2 just learns how to choose it optimally, every step.</div></div>
+  <div style="overflow-x:auto">
+  <table>
+    <tr><th>Method</th><th>Smooth?</th><th>Lag?</th><th>Knows its uncertainty?</th></tr>
+    <tr><td><b>Raw sensor</b></td><td>✕ Jittery</td><td>✓ None</td><td>✕</td></tr>
+    <tr><td><b>Moving average</b></td><td>✓✓</td><td>✕✕ Always late</td><td>✕</td></tr>
+    <tr><td><b>Exponential blend (fixed K)</b></td><td>✓ Tunable</td><td>~ Tunable tradeoff</td><td>✕</td></tr>
+    <tr><td><b>Kalman filter → Part 2</b></td><td>✓ Adaptive</td><td>✓ Adaptive</td><td><b>✓ Yes — that's the point</b></td></tr>
+  </table>
+  </div>
+  <p>Notice the tradeoff never disappears — <strong>smoothness vs. responsiveness</strong> is a physics-of-information tradeoff, not a bug. Good estimators don't eliminate it; they spend it wisely, moment by moment.</p>
+
+  <h3>5 &nbsp;·&nbsp; The loop, on a postcard</h3>
+  <div class="steps">
+    <div class="step"><b>1 · PREDICT</b><p>Use your model of how the world moves. Guess forwards. Admit more uncertainty.</p></div>
+    <div class="step"><b>2 · MEASURE</b><p>Get a clue. It will be noisy, late, or partial. That's normal — work with it.</p></div>
+    <div class="step"><b>3 · BLEND</b><p>Compare clue vs. prediction. Correct by K × surprise. Shrink uncertainty. Repeat — forever.</p></div>
+  </div>
+  <p>Filters (Parts 2–4) run this loop <em>forwards, one step at a time, forgetting as they go</em>. Graph-based methods (Part 5) do something bolder: they keep <em>every</em> prediction and measurement as a node in a big graph and re-solve the whole history when new evidence arrives — like a detective re-pinning an entire evidence board, not just the last photo. Same loop, different memory.</p>
+  <div class="kbd-row"><span class="pill">FILTERS = low memory, real-time, “now”</span><span class="pill">GRAPH / SMOOTHING = full memory, revises the past</span></div>
+
+  <h3>Check yourself — 30 seconds</h3>
+  <div class="quiz">
+    <p><b>1. Your sensor gets twice as noisy. What should happen to K?</b></p>
+    <button class="btn quiz-btn" data-correct="0">K goes up — listen to the sensor more</button>
+    <button class="btn quiz-btn" data-correct="1">K goes down — trust your prediction more</button>
+    <button class="btn quiz-btn" data-correct="0">K stays the same — K is a property of the target</button>
+    <div class="feedback" id="quizFb"></div>
+    <p style="margin-top:16px"><b>2. You predict five steps in a row with no measurements. Your blob should…</b></p>
+    <button class="btn quiz-btn2" data-correct="1">Grow wider — you're guessing into the dark</button>
+    <button class="btn quiz-btn2" data-correct="0">Stay the same — predictions are exact</button>
+    <div class="feedback" id="quizFb2"></div>
+  </div>
+
+  <div class="next">
+    <div style="font-size:12px;letter-spacing:.14em;font-weight:800">NEXT · PART 2</div>
+    <h3>The Kalman Filter — the dial that turns itself</h3>
+    <p>Part 1 fixed K by hand and hoped. Part 2 derives it: given how fast your uncertainty grows and how noisy your sensor really is, there is a <em>provably best</em> K at every step. We'll build it, watch its blob breathe, and break it on purpose.</p>
+    <p style="font-size:14px;opacity:.85">You now know: state vs. measurement · belief as a blob · predict / measure / blend · K as trust · why averages lag. That's genuinely most of the intuition. The rest is machinery.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PART 2 -->
+  <div class="section-label" id="part2">Part 2 · The Workhorse</div>
+  <h2 style="margin-top:8px">The Kalman Filter — the dial that turns itself</h2>
+  <p class="small">PART 2 OF 6 &nbsp;·&nbsp; GAUSSIANS · PREDICT / UPDATE · KALMAN GAIN · Q &amp; R</p>
+
+  <div class="storybox">
+    <div style="font-size:12px;letter-spacing:.16em;font-weight:800">JULY 1969 · ON THE WAY TO THE MOON</div>
+    <p class="big">Apollo's computer had to know where the spacecraft was — with a gyroscope that drifted and star sightings that were few, noisy, and late.</p>
+    <p>It couldn't afford to trust either one blindly. So, hundreds of times, it did what you did catching that ball in Part 1: predict from physics, peek at a measurement, blend by exactly the right amount. The maths for that “exactly right amount” had been published in 1960 by Rudolf Kálmán — and a version of it flew to the Moon. It has been running, in some form, in almost everything that moves ever since.</p>
+  </div>
+
+  <h3>1 &nbsp;·&nbsp; What Part 1 left undone</h3>
+  <p>In Part 1 you turned the trust dial <strong>K</strong> by hand. It worked — until the noise changed, the target sped up, or you looked away for five steps. Then your carefully chosen K was wrong, and you had no principled way to fix it.</p>
+  <p>The Kalman filter fixes exactly that, and nothing more mysterious than that. It keeps <strong>two numbers</strong> instead of one — and the easiest way to see them is to read the blob itself:</p>
+
+  <figure class="belief-fig" style="margin-left:0;margin-right:0">
+    <div class="belief-fig-head"><b>Diagram · One belief, two numbers</b><span>Same blob as Part 1 — now labelled</span></div>
+    <svg viewBox="0 0 880 324" role="img" aria-labelledby="beliefTitle beliefDesc" xmlns="http://www.w3.org/2000/svg">
+      <title id="beliefTitle">Anatomy of a belief: x-hat is the centre of the bell curve, P controls its width</title>
+      <desc id="beliefDesc">A bell curve centred at x-hat equals 42. The shaded middle spans plus or minus one sigma around the centre. P equals sigma squared, so a larger P makes a wider, flatter blob.</desc>
+      <defs>
+        <marker id="arrTeal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--teal)"/></marker>
+        <marker id="arrOrange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--orange)"/></marker>
+      </defs>
+      <!-- ±1σ shaded band under the curve -->
+      <path d="M365,242 L365,125 L402,72 L440,50 L478,72 L515,125 L515,242 Z" style="fill:var(--teal);opacity:.16"/>
+      <!-- full bell curve -->
+      <path d="M120,242 L215,240 L252,234 L290,216 L327,180 L365,125 L402,72 L440,50 L478,72 L515,125 L553,180 L590,216 L628,234 L665,240 L760,242" fill="none" style="stroke:var(--teal)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M120,242 L215,240 L252,234 L290,216 L327,180 L365,125 L402,72 L440,50 L478,72 L515,125 L553,180 L590,216 L628,234 L665,240 L760,242 L760,242 L120,242 Z" style="fill:var(--teal);opacity:.07"/>
+      <!-- axis -->
+      <line x1="56" y1="242" x2="824" y2="242" style="stroke:var(--muted)" stroke-width="2"/>
+      <g style="fill:var(--muted)" font-family="JetBrains Mono, monospace" font-size="13" text-anchor="middle">
+        <text x="190" y="264">22</text><text x="315" y="264">32</text><text x="440" y="264" style="fill:var(--ink)" font-weight="700">42</text><text x="565" y="264">52</text><text x="690" y="264">62</text>
+      </g>
+      <g style="stroke:var(--muted)" stroke-width="2"><line x1="190" y1="242" x2="190" y2="249"/><line x1="315" y1="242" x2="315" y2="249"/><line x1="565" y1="242" x2="565" y2="249"/><line x1="690" y1="242" x2="690" y2="249"/></g>
+      <text x="824" y="228" text-anchor="end" font-family="Public Sans, sans-serif" font-size="12" font-weight="700" style="fill:var(--muted)">position →</text>
+      <!-- x̂ centre line -->
+      <line x1="440" y1="52" x2="440" y2="242" style="stroke:var(--teal)" stroke-width="2.5" stroke-dasharray="7 6"/>
+      <circle cx="440" cy="242" r="7" style="fill:var(--ink)"/>
+      <!-- x̂ callout -->
+      <text x="440" y="24" text-anchor="middle" font-family="Public Sans, sans-serif" font-size="22" font-weight="800" style="fill:var(--teal)">x̂ = 42</text>
+      <text x="440" y="43" text-anchor="middle" font-family="Public Sans, sans-serif" font-size="14" font-weight="700" style="fill:var(--muted)">the centre — your single best guess</text>
+      <!-- P bracket: ±σ -->
+      <line x1="365" y1="282" x2="515" y2="282" style="stroke:var(--orange)" stroke-width="2.5" marker-start="url(#arrOrange)" marker-end="url(#arrOrange)"/>
+      <line x1="365" y1="248" x2="365" y2="276" style="stroke:var(--orange)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="515" y1="248" x2="515" y2="276" style="stroke:var(--orange)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <text x="440" y="306" text-anchor="middle" font-family="Public Sans, sans-serif" font-size="16" font-weight="800" style="fill:var(--orange)">this width is set by P &nbsp;·&nbsp; shaded span = x̂ ± σ, where σ = √P</text>
+    </svg>
+    <div class="belief-legend">
+      <div class="lx"><strong style="color:var(--teal)">x̂ — where you think it is</strong>The dashed line through the peak. Move the centre and you move the guess — nothing else changes. This is the number you would report, steer by, or catch with.</div>
+      <div class="lp"><strong style="color:var(--orange)">P — how wrong that guess could be</strong>The spread of the blob, as a variance: P = σ². Part 1 drew the width as σ (“give or take”); squaring it gives P. Wide blob = large P = “I could be well off.” Narrow blob = small P = “I'm confident.”</div>
+    </div>
+    <p class="fig-note">Read it as one sentence: <strong style="color:var(--ink)">“I think it's at x̂, give or take about √P.”</strong> The filter never carries the dot without the give-or-take.</p>
+  </figure>
+
+  <p style="margin-top:20px">Hold x̂ fixed and change only P, and you get two completely different filters — same guess, opposite behaviour when the next measurement arrives:</p>
+
+  <div class="grid2">
+    <div class="p-card">
+      <h4>Small P — “I'm confident”</h4>
+      <svg viewBox="0 0 400 188" role="img" aria-label="Narrow tall bell curve centred at 42 with P equals 9" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30,150 L110,149 L140,136 L155,106 L170,74 L185,40 L200,28 L215,40 L230,74 L245,106 L260,136 L290,149 L370,150" fill="none" style="stroke:var(--teal)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M30,150 L110,149 L140,136 L155,106 L170,74 L185,40 L200,28 L215,40 L230,74 L245,106 L260,136 L290,149 L370,150 L370,150 L30,150 Z" style="fill:var(--teal);opacity:.12"/>
+        <line x1="24" y1="150" x2="376" y2="150" style="stroke:var(--muted)" stroke-width="2"/>
+        <line x1="200" y1="28" x2="200" y2="150" style="stroke:var(--teal)" stroke-width="2" stroke-dasharray="6 5"/>
+        <circle cx="200" cy="150" r="6" style="fill:var(--ink)"/>
+        <text x="200" y="16" text-anchor="middle" font-family="Public Sans, sans-serif" font-size="14" font-weight="800" style="fill:var(--teal)">x̂ = 42</text>
+        <line x1="170" y1="168" x2="230" y2="168" style="stroke:var(--orange)" stroke-width="2.5"/>
+        <text x="200" y="184" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" style="fill:var(--orange)">±σ narrow</text>
+      </svg>
+      <span class="p-val">P = 9 &nbsp;·&nbsp; σ = 3</span>
+      <p>Tall, narrow blob. Most of the belief sits within a few units of 42. <strong>Next measurement? Barely moves you</strong> — K will be small, because you already think you know.</p>
+    </div>
+    <div class="p-card">
+      <h4>Large P — “I'm guessing”</h4>
+      <svg viewBox="0 0 400 188" role="img" aria-label="Wide flat bell curve centred at 42 with P equals 225" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16,150 L30,142 L72,128 L115,110 L157,94 L200,86 L243,94 L285,110 L328,128 L370,142 L384,150" fill="none" style="stroke:var(--teal)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M16,150 L30,142 L72,128 L115,110 L157,94 L200,86 L243,94 L285,110 L328,128 L370,142 L384,150 L384,150 L16,150 Z" style="fill:var(--teal);opacity:.12"/>
+        <line x1="24" y1="150" x2="376" y2="150" style="stroke:var(--muted)" stroke-width="2"/>
+        <line x1="200" y1="86" x2="200" y2="150" style="stroke:var(--teal)" stroke-width="2" stroke-dasharray="6 5"/>
+        <circle cx="200" cy="150" r="6" style="fill:var(--ink)"/>
+        <text x="200" y="62" text-anchor="middle" font-family="Public Sans, sans-serif" font-size="14" font-weight="800" style="fill:var(--teal)">x̂ = 42 — same centre</text>
+        <text x="200" y="78" text-anchor="middle" font-family="Public Sans, sans-serif" font-size="11.5" font-weight="700" style="fill:var(--muted)">but the belief is smeared out</text>
+        <line x1="115" y1="168" x2="285" y2="168" style="stroke:var(--orange)" stroke-width="2.5"/>
+        <text x="200" y="184" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" style="fill:var(--orange)">±σ wide</text>
+      </svg>
+      <span class="p-val">P = 225 &nbsp;·&nbsp; σ = 15</span>
+      <p>Low, wide blob. 42 is still the best single guess, but 30 or 55 are nearly as plausible. <strong>Next measurement? Moves you a lot</strong> — K will be large, because you were mostly guessing.</p>
+    </div>
+  </div>
+  <p class="small" style="margin-top:10px">Same x̂, different P, opposite reaction to the same sensor reading. That contrast — invisible if you only carry the dot — is exactly why the filter carries both numbers.</p>
+  <p>Because once you carry P, you no longer have to <em>guess</em> K. You can <strong>compute</strong> it, fresh, at every single step, from two honest questions: <em>how unsure am I?</em> and <em>how noisy is this sensor?</em></p>
+  <blockquote>If you're very unsure and the sensor is good, lean on the sensor. If you're confident and the sensor is junk, barely move. The Kalman filter is that sentence, made precise.</blockquote>
+
+  <h3>2 &nbsp;·&nbsp; The five equations — now you can play with them</h3>
+  <p>Textbooks print five equations and scare people off. Don't just read these — <strong>poke them</strong>. Grouped, there are just the two moves you already know: <strong>predict</strong> (blob drifts and grows) and <strong>update</strong> (blob gets pulled and shrinks). The cards below are the map. The <strong>Equation Lab</strong> right underneath is the territory — every slider moves a real number <em>inside</em> the equations, and the blobs obey instantly.</p>
+
+  <div class="eq-grid">
+    <div class="eq-card">
+      <h4 style="color:var(--teal)">① PREDICT — “where should it be by now?”</h4>
+      <div class="eq">x̂⁻ = F · x̂ + B · u<br>P⁻&nbsp; = F · P · Fᵀ + Q</div>
+      <p style="font-size:14px;color:var(--muted)">Roll the guess forward with your motion model (F). Roll the uncertainty forward too — then <strong>add Q</strong>, the process noise: the honest admission that the world doesn't follow your model exactly. No measurement yet, so P can only grow.</p>
+    </div>
+    <div class="eq-card">
+      <h4 style="color:var(--orange)">② UPDATE — “a clue arrived, blend it”</h4>
+      <div class="eq">K&nbsp; = P⁻Hᵀ / ( H·P⁻Hᵀ + R )<br>x̂ = x̂⁻ + K · ( z − H·x̂⁻ )<br>P&nbsp; = ( I − K·H ) · P⁻</div>
+      <p style="font-size:14px;color:var(--muted)"><strong>R</strong> is the measurement noise — how much this sensor typically lies. <strong>z − H·x̂⁻</strong> is the innovation from Part 1: your surprise. K weights the surprise, the guess moves, and P shrinks.</p>
+    </div>
+  </div>
+
+  <p>In the 1D, position-only case the gain collapses to the formula you secretly used in Playground 1:</p>
+  <div class="formula">
+    <div class="eq">K &nbsp;=&nbsp; P⁻ &nbsp;/&nbsp; ( P⁻ + R )</div>
+    <div class="note" style="margin-top:8px">Your uncertainty ÷ (your uncertainty + sensor noise) · P ≫ R → K → 1, trust the sensor · P ≪ R → K → 0, trust yourself</div>
+  </div>
+  <p>Read that fraction slowly, because it's the entire filter in miniature. K is <strong>your share of the total doubt</strong>. If almost all the doubt is yours, the measurement should move you a lot. If almost all the doubt is the sensor's, it should barely move you at all. No hand-tuning — the ratio does it, every step, as P breathes.</p>
+
+  <div class="timeline" aria-label="One Kalman cycle">
+    <span class="chip">x̂, P — current belief</span><span class="chip">→ PREDICT: +Q, P grows</span><span class="chip">→ MEASURE: z arrives</span><span class="chip">→ K = P⁻/(P⁻+R)</span><span class="chip">→ UPDATE: P shrinks</span><span class="chip">→ repeat, forever</span>
+  </div>
+
+  <section class="lab" aria-label="Equation lab playground">
+    <div class="lab-head"><div><h3>🎮 Equation Lab — drag the numbers, watch the maths move</h3><p>Your prediction is fixed at <b>x̂⁻ = 42</b> (same as §1) so you can isolate the uncertainty maths. Drag the orange measurement dot on the chart, or use the sliders. <b>Every equation below recalculates live</b> — no “trust me”, just arithmetic you control.</p></div><span class="pill">PLAY WITH §2</span></div>
+
+    <div class="eq-canvas-wrap">
+      <canvas id="eqCanvas" width="920" height="320" aria-label="Three Gaussian blobs: prediction, measurement and the blended result"></canvas>
+      <span class="eq-drag-hint">↔ drag the orange dot</span>
+    </div>
+    <div class="eq-blob-key">
+      <span><i style="background:var(--teal)"></i>Prediction blob — centre 42, width √P⁻</span>
+      <span><i style="background:var(--orange)"></i>Measurement blob — centre z, width √R</span>
+      <span><i style="background:var(--ink)"></i>Result blob — centre x̂, width √P (always narrower)</span>
+    </div>
+
+    <div class="eq-live" aria-live="polite">
+      <div class="eq-live-title">The equations, with YOUR numbers plugged in ↓</div>
+      <div class="eq-line"><span class="lbl lbl-p">Predict</span> P⁻ &nbsp;=&nbsp; P &nbsp;+&nbsp; Q &nbsp;=&nbsp; <b class="teal" id="eqShowP0">64</b> + <b class="teal" id="eqShowQ">36</b> &nbsp;=&nbsp; <b class="result" id="eqShowPminus">100</b></div>
+      <div class="eq-line"><span class="lbl lbl-u">Gain</span> K &nbsp;=&nbsp; P⁻ / (P⁻ + R) &nbsp;=&nbsp; <b id="eqShowPminus2">100</b> / (<b id="eqShowPminus3">100</b> + <b class="orange" id="eqShowR">36</b>) &nbsp;=&nbsp; <b class="result" id="eqShowK">0.74</b></div>
+      <div class="eq-line"><span class="lbl lbl-u">Surprise</span> innovation &nbsp;=&nbsp; z − x̂⁻ &nbsp;=&nbsp; <b class="orange" id="eqShowZ">68</b> − 42 &nbsp;=&nbsp; <b class="result" id="eqShowInnov">+26</b></div>
+      <div class="eq-line"><span class="lbl lbl-u">Update</span> x̂ &nbsp;=&nbsp; x̂⁻ + K × innovation &nbsp;=&nbsp; 42 + <b id="eqShowK2">0.74</b> × <b id="eqShowInnov2">26</b> &nbsp;=&nbsp; <b class="result" id="eqShowX">61.1</b></div>
+      <div class="eq-line"><span class="lbl lbl-u">Shrink</span> P &nbsp;=&nbsp; (1 − K) × P⁻ &nbsp;=&nbsp; (1 − <b id="eqShowK3">0.74</b>) × <b id="eqShowPminus4">100</b> &nbsp;=&nbsp; <b class="result" id="eqShowPnew">26.5</b></div>
+      <p>Read the last two lines together: you moved <strong style="color:var(--ink)" id="eqMovePct">74% of the way</strong> toward the measurement, and your uncertainty fell from <span class="mono" id="eqShrinkFrom">100</span> to <span class="mono" id="eqShrinkTo">26.5</span>. That shrink is not a metaphor — it is (1 − K) × P⁻, happening because you peeked.</p>
+    </div>
+
+    <div class="gain-wrap">
+      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800"><span>Kalman gain K — your share of the total doubt</span><span class="mono" id="eqKVal" style="color:var(--teal)">0.74</span></div>
+      <div class="gain-bar" style="margin-top:8px"><div class="gain-fill" id="eqKBar" style="width:74%;background:var(--teal)"></div><div id="eqRBar" style="height:100%;background:var(--orange);transition:width .2s ease"></div></div>
+      <div class="gain-labels"><span>◀ teal = your doubt P⁻ · you move this much</span><span>orange = sensor doubt R ▶</span></div>
+    </div>
+
+    <div class="controls">
+      <div class="control"><label>Starting uncertainty P <output id="eqPOut">64</output></label><input type="range" id="eqP" min="4" max="200" step="4" value="64"></div>
+      <div class="control"><label>Process noise Q <output id="eqQOut">36</output></label><input type="range" id="eqQ" min="0" max="120" step="4" value="36"></div>
+      <div class="control"><label>Sensor noise R <output id="eqROut2">36</output></label><input type="range" id="eqR" min="4" max="225" step="4" value="36"></div>
+      <div class="control"><label>Measurement z <output id="eqZOut">68</output></label><input type="range" id="eqZ" min="8" max="92" step="1" value="68"></div>
+    </div>
+
+    <div class="btns">
+      <button class="btn" data-eqpreset="lost">😵 I’m lost — huge P, good sensor</button>
+      <button class="btn" data-eqpreset="confident">😎 I’m confident — tiny P</button>
+      <button class="btn" data-eqpreset="badsensor">📡 Terrible sensor — huge R</button>
+      <button class="btn" data-eqpreset="greatsensor">🎯 Great sensor — tiny R</button>
+      <button class="btn orange" data-eqpreset="wild">⚡ Wild surprise — z far away</button>
+      <button class="btn" data-eqpreset="reset">↺ Reset to §1 example</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span>After predict P⁻</span><b id="eqStatPminus">100</b></div>
+      <div class="stat"><span>Gain K</span><b id="eqStatK">0.74</b></div>
+      <div class="stat"><span>New estimate x̂</span><b id="eqStatX">61.1</b></div>
+      <div class="stat"><span>New uncertainty P</span><b id="eqStatP">26.5</b></div>
+      <div class="stat"><span>Innovation</span><b id="eqStatInnov">+26</b></div>
+      <div class="stat"><span>You moved</span><b id="eqStatMove">+19.1</b></div>
+    </div>
+    <div class="readout" id="eqReadout"><strong>Try the extremes:</strong> set P tiny and R huge — K collapses toward 0 and even a measurement at 90 barely nudges you from 42. Now flip them — huge P, tiny R — K rushes toward 1 and you land almost exactly on the sensor. Same equations, opposite personalities. <em>You</em> chose the personality with two sliders.</div>
+  </section>
+
+  <p><strong>Three experiments that make §2 stick:</strong> ① <b>Make K = 0.50 exactly</b> — can you? (Hint: K is ½ when P⁻ = R, whatever the actual values are.) ② <b>Keep K fixed, double the surprise</b> — slide z twice as far from 42 and watch x̂ move twice as far, but P shrink by exactly the same amount. Surprise moves the centre; only the <em>ratio</em> P⁻∶R decides the shrink. ③ <b>Predict without peeking</b> — crank Q alone: P⁻ balloons, so the <em>next</em> measurement will hit harder. Q doesn't move you now — it makes you more movable later.</p>
+
+  <h3>3 &nbsp;·&nbsp; Watch one cycle, step by step</h3>
+  <p>Don't take the breathing on faith — step it. This playground freezes time. Each button press is exactly one half of the loop, with the real numbers shown. The blob is your belief, the orange tick is the latest measurement, the dark dot is the truth you're never allowed to see in real life.</p>
+
+  <section class="lab" aria-label="Kalman step-by-step playground">
+    <div class="lab-head"><div><h3>🎮 Playground 3 — One cycle at a time</h3><p>Press <b>Predict</b>: the estimate rolls forward by its velocity and P grows by Q. Press <b>Update</b>: a noisy measurement arrives, K is computed live, and the blob snaps tighter. Watch K — it is never the same twice.</p></div><span class="pill">STEP IT SLOWLY</span></div>
+    <canvas id="kfStepCanvas" width="920" height="300"></canvas>
+    <div class="btns">
+      <button class="btn" id="kfPredict">→ 1 · Predict step</button>
+      <button class="btn orange" id="kfUpdate">👀 2 · Measurement + update</button>
+      <button class="btn primary" id="kfAuto">▶ Auto-run cycle</button>
+      <button class="btn" id="kfStepReset">↺ Reset filter</button>
+    </div>
+    <div class="gain-wrap">
+      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800"><span>Kalman gain K — last update</span><span class="mono" id="kfKVal" style="color:var(--teal)">—</span></div>
+      <div class="gain-bar" style="margin-top:8px"><div class="gain-fill" id="kfKBar" style="width:0%"></div></div>
+      <div class="gain-labels"><span>0 · ignore sensor</span><span>trust split</span><span>1 · copy sensor</span></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span>Estimate x̂</span><b id="kfX">20.0</b></div>
+      <div class="stat"><span>Velocity v̂</span><b id="kfV">2.0</b></div>
+      <div class="stat"><span>Uncertainty P (pos)</span><b id="kfP">25.0</b></div>
+      <div class="stat"><span>Innovation (surprise)</span><b id="kfInnov">—</b></div>
+      <div class="stat"><span>Step</span><b id="kfStepN">0</b></div>
+      <div class="stat"><span>Hidden truth</span><b id="kfTruth">20</b></div>
+    </div>
+    <div class="controls">
+      <div class="control"><label>Process noise Q <output id="kfQOut">1.2</output></label><input type="range" id="kfQ" min="0.1" max="6" step="0.1" value="1.2"></div>
+      <div class="control"><label>Sensor noise R <output id="kfROut">36</output></label><input type="range" id="kfR" min="4" max="160" step="4" value="36"></div>
+    </div>
+    <div class="readout" id="kfReadout"><strong>Start:</strong> you begin at 20, truth starts at 20 too — but truth moves at a steady +2 per step and your velocity guess will never be perfect. Predict a few times without updating and watch P (and your error) grow. Then update and watch K spend that uncertainty.</div>
+  </section>
+
+  <p><strong>Two things to burn in.</strong> First: K is <em>not</em> a tuning knob you set once — in a healthy filter it wobbles step to step as P grows and shrinks, settling into a rhythm once the breathing is regular (the “steady state”). Second: after a long run of predicts with no measurement, P is huge, so the next K is close to 1 — the filter quite rightly says <em>“I've been blind, believe the sensor.”</em> That behaviour falls out of the fraction. Nobody programmed it in.</p>
+
+  <h3>4 &nbsp;·&nbsp; Q and R — the two knobs you actually tune</h3>
+  <p>If K is automatic, what's left for the engineer? Two honest numbers, and they are a <em>story you tell the filter about the world</em>:</p>
+  <div style="overflow-x:auto">
+  <table>
+    <tr><th>Knob</th><th>Means</th><th>Set it too low →</th><th>Set it too high →</th></tr>
+    <tr><td><b>Q — process noise</b></td><td>“How much do I distrust my motion model per step?”</td><td>Filter gets smug. P stays tiny, K stays low, and when the target manoeuvres the filter lags and can't catch up.</td><td>Filter gets anxious. P inflates every step, K stays high, estimate jitters after every measurement.</td></tr>
+    <tr><td><b>R — measurement noise</b></td><td>“How much do I distrust this sensor?” (ideally from its datasheet / calibration)</td><td>Filter believes a noisy sensor too much — jittery, chases outliers.</td><td>Filter ignores a good sensor — smooth but slow, wastes information.</td></tr>
+  </table>
+  </div>
+  <p>The classic beginner mistake is tuning Q and R by vibes until the plot “looks nice” on one recording — then watching it fall apart on the next. The discipline is: <strong>R comes from the sensor</strong> (measure it standing still; the scatter <em>is</em> R), and <strong>Q comes from the manoeuvre</strong> (how violently can the thing you're tracking actually change its motion?). Tune the story, not the plot.</p>
+
+  <h3>5 &nbsp;·&nbsp; Now break it — the live tracker</h3>
+  <p>Same target as Part 1's tracker, but now nobody sets K: the Kalman filter (teal) computes it live from Q and R, while a fixed-K blend (grey dashed, K = 0.35 — Part 1's favourite) runs alongside for comparison. Then do what the roadmap promised: <strong>give it a terrible sensor</strong> and a glitch, and watch which estimator survives.</p>
+
+  <section class="lab" aria-label="Kalman live tracker playground">
+    <div class="lab-head"><div><h3>🎮 Playground 4 — Kalman vs. fixed-K, live</h3><p>Slide Q and R and watch the live K readout breathe in the stats. Then hit <b>Sensor glitch</b> (one wild outlier) or <b>Dropout × 12</b> (no measurements — pure prediction) and see who recovers.</p></div><span class="pill">BREAK IT ON PURPOSE</span></div>
+    <canvas id="kfTrackCanvas" width="920" height="340"></canvas>
+    <div class="legend"><span><i style="background:#182230"></i>Truth</span><span><i style="background:#EA580C"></i>Sensor (raw)</span><span><i style="background:#0F766E"></i>Kalman (auto-K)</span><span><i style="background:#94A3B8"></i>Fixed K = 0.35</span></div>
+    <div class="controls">
+      <div class="control"><label>Process noise Q <output id="kf2QOut">0.8</output></label><input type="range" id="kf2Q" min="0.05" max="4" step="0.05" value="0.8"></div>
+      <div class="control"><label>Sensor noise R <output id="kf2ROut">64</output></label><input type="range" id="kf2R" min="9" max="400" step="1" value="64"></div>
+      <div class="control"><label>Actual sensor noise <output id="kf2NoiseOut">8</output></label><input type="range" id="kf2Noise" min="1" max="24" step="1" value="8"></div>
+    </div>
+    <div class="btns">
+      <button class="btn orange" id="kfGlitch">⚡ Sensor glitch (outlier)</button>
+      <button class="btn" id="kfDropout">🙈 Dropout × 12 steps</button>
+      <button class="btn" data-preset="honest">Honest Q / R</button>
+      <button class="btn" data-preset="smug">Smug filter (Q tiny)</button>
+      <button class="btn" data-preset="anxious">Anxious filter (Q huge)</button>
+      <button class="btn primary" id="kf2Pause">⏸ Pause</button>
+      <button class="btn" id="kf2Reset">↺ Restart</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><span>Kalman error (RMSE)</span><b id="kf2RmseK">—</b></div>
+      <div class="stat"><span>Fixed-K error</span><b id="kf2RmseF">—</b></div>
+      <div class="stat"><span>Raw sensor error</span><b id="kf2RmseR">—</b></div>
+      <div class="stat"><span>Live K right now</span><b id="kf2K">—</b></div>
+      <div class="stat"><span>Live P right now</span><b id="kf2P">—</b></div>
+      <div class="stat"><span>Verdict</span><b id="kf2Verdict" style="font-size:16px;font-family:'Public Sans',sans-serif;padding-top:4px">Warming up…</b></div>
+    </div>
+    <div class="readout" id="kf2Readout"><strong>Try this sequence:</strong> ① <b>Honest Q/R</b> — Kalman should quietly beat fixed-K. ② Drag <em>actual</em> sensor noise to max but leave R low — you lied to the filter about the sensor, so it over-trusts garbage. ③ Hit <b>Dropout</b> — watch P climb, then K spike on the first measurement back. That spike is the fraction from §2, live.</div>
+  </section>
+
+  <h3>6 &nbsp;·&nbsp; When Kalman is exactly right — and when it isn't</h3>
+  <p>Under its assumptions, the Kalman filter isn't just good, it's <strong>provably optimal</strong>: no other estimator can squeeze more out of the same information. The catch is the assumptions, and you should be able to recite them like a pre-flight checklist:</p>
+  <div class="grid2">
+    <div class="callout"><strong>✓ IT ASSUMES</strong><br>• Motion &amp; measurement models are <b>linear</b> (straight-line maths)<br>• All noise is <b>Gaussian</b> — bell-shaped, no wild outliers<br>• You know Q and R (roughly)<br>• One blob is enough to describe your belief</div>
+    <div class="callout"><strong>✕ REALITY, OFTEN</strong><br>• Robots <b>turn</b> — headings wrap, geometry curves → <b>Part 3: EKF / UKF</b><br>• A lost robot could be in <b>two corridors at once</b> — two blobs → <b>Part 4: particles</b><br>• Sensors glitch, drop out, and lie — gating &amp; robust tricks patch this, up to a point</div>
+  </div>
+  <p>Notice the glitch button in Playground 4: one outlier yanks even a well-tuned Kalman filter, because a Gaussian sensor model says wild readings are merely <em>unlikely</em>, never <em>impossible</em> — so the filter dutifully moves part-way toward nonsense. Real systems add an <strong>innovation gate</strong>: if the surprise is absurdly large compared with P + R, reject the measurement outright. Knowing <em>why</em> that patch exists is worth more than the patch.</p>
+
+  <div class="formula">
+    <div class="eq">Predict: grow P by Q &nbsp;·&nbsp; Gain: K = P⁻/(P⁻+R) &nbsp;·&nbsp; Update: shrink P by (1−K)</div>
+    <div class="note" style="margin-top:8px">The whole of Part 2 on one line. If you remember the breathing — grow, shrink, grow, shrink — you remember the Kalman filter.</div>
+  </div>
+
+  <h3>Check yourself — Part 2</h3>
+  <div class="quiz">
+    <p><b>1. Your P has grown huge after a long dropout, and a measurement finally arrives. K will be…</b></p>
+    <button class="btn quiz-btn3" data-correct="1">Close to 1 — you've been blind, so believe the sensor</button>
+    <button class="btn quiz-btn3" data-correct="0">Close to 0 — protect the prediction at all costs</button>
+    <button class="btn quiz-btn3" data-correct="0">Unchanged — K is set once when you tune the filter</button>
+    <div class="feedback" id="quizFb3"></div>
+    <p style="margin-top:16px"><b>2. You set R far too small — you told the filter the sensor is much better than it is. The estimate will…</b></p>
+    <button class="btn quiz-btn4" data-correct="0">Get smoother — trusting a good sensor always helps</button>
+    <button class="btn quiz-btn4" data-correct="1">Get jittery — K stays too high and it chases sensor noise</button>
+    <button class="btn quiz-btn4" data-correct="0">Stop updating — the filter detects the lie</button>
+    <div class="feedback" id="quizFb4"></div>
+    <p style="margin-top:16px"><b>3. Which failure is <em>not</em> fixable by tuning Q and R?</b></p>
+    <button class="btn quiz-btn5" data-correct="0">The target manoeuvres harder than expected</button>
+    <button class="btn quiz-btn5" data-correct="1">Your belief is genuinely two blobs — the robot could be in either of two corridors</button>
+    <button class="btn quiz-btn5" data-correct="0">The sensor is noisier than its datasheet claims</button>
+    <div class="feedback" id="quizFb5"></div>
+  </div>
+
+  <div class="next">
+    <div style="font-size:12px;letter-spacing:.14em;font-weight:800">NEXT · PART 3</div>
+    <h3>When the World Isn't Straight</h3>
+    <p>Everything in Part 2 leaned on one quiet word: <em>linear</em>. But robots turn, ranges curve, and headings wrap around — and a Gaussian blob pushed through a curve comes out banana-shaped. Part 3 meets the two classic patches: the <strong>EKF</strong>, which linearises and hopes, and the <strong>UKF</strong>, which sends sigma points through the real curve instead.</p>
+    <p style="font-size:14px;opacity:.85">You now know: x̂ and P · predict (+Q) / update (with R) · K = P⁻/(P⁻+R) · why K breathes · Q from the manoeuvre, R from the sensor · and the assumptions that Parts 3–4 will break, one at a time.</p>
+  </div>
+
+  <footer>
+    <p><strong>Estimation, Explained</strong> — a series on state estimation: filters, particles &amp; graphs, from first guess to full SLAM. Parts 1–2 of 6 live · Playgrounds run entirely in your browser — drag the dials and break things; that's the fastest way this sticks.</p>
+  </footer>
+</div>
+
+<script>
+// ---------- Playground 1: Belief blob ----------
+(function(){
+  var mean=50, sigma=6, truth=68, lastMeas=null;
+  var cv=document.getElementById('beliefCanvas'), ctx=cv.getContext('2d');
+  function draw(){
+    var W=cv.width,H=cv.height; ctx.clearRect(0,0,W,H);
+    var base=H-56, midX=function(v){return 40+(W-80)*(v/100);};
+    // axis
+    ctx.strokeStyle='#CBD5E1'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(40,base); ctx.lineTo(W-40,base); ctx.stroke();
+    ctx.fillStyle='#64748B'; ctx.font='12px JetBrains Mono'; ctx.textAlign='center';
+    [0,25,50,75,100].forEach(function(v){ ctx.fillText(v, midX(v), base+22); ctx.beginPath(); ctx.moveTo(midX(v),base); ctx.lineTo(midX(v),base+6); ctx.stroke(); });
+    // gaussian
+    ctx.beginPath();
+    for(var x=0;x<=100;x+=0.5){ var y=Math.exp(-Math.pow(x-mean,2)/(2*sigma*sigma)); var px=midX(x), py=base - y*(H-110); if(x===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+    ctx.strokeStyle='#0F766E'; ctx.lineWidth=3; ctx.stroke();
+    ctx.lineTo(midX(100),base); ctx.lineTo(midX(0),base); ctx.closePath(); ctx.fillStyle='rgba(15,118,110,0.16)'; ctx.fill();
+    // mean line
+    ctx.strokeStyle='#0F766E'; ctx.setLineDash([6,5]); ctx.beginPath(); ctx.moveTo(midX(mean),base); ctx.lineTo(midX(mean),36); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#0F766E'; ctx.font='700 13px Public Sans'; ctx.fillText('your guess '+mean.toFixed(1), midX(mean), 24);
+    // truth
+    ctx.fillStyle='#182230'; ctx.beginPath(); ctx.arc(midX(truth),base-10,8,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#182230'; ctx.font='700 12px Public Sans'; ctx.fillText('TRUTH '+truth, midX(truth), base+38);
+    // last measurement
+    if(lastMeas!==null){ ctx.fillStyle='#EA580C'; ctx.beginPath(); ctx.arc(midX(lastMeas),base-10,6,0,Math.PI*2); ctx.fill(); ctx.font='700 12px Public Sans'; ctx.fillText('peek: '+lastMeas.toFixed(0), midX(lastMeas), 44); }
+    document.getElementById('statMean').textContent=mean.toFixed(1);
+    document.getElementById('statSigma').textContent=sigma.toFixed(1);
+  }
+  var readout=document.getElementById('beliefReadout');
+  document.getElementById('btnPredict').onclick=function(){ mean+=3.5; sigma=Math.min(28, sigma*1.42+1.5); lastMeas=null; readout.innerHTML='<strong>Predicted.</strong> Time passed, the world drifted (+3.5) and your blob grew to ±'+sigma.toFixed(1)+'. Do this five times and you honestly know almost nothing — that honesty is a feature.'; draw(); };
+  document.getElementById('btnMeasure').onclick=function(){ var R=36; var meas=truth+(Math.random()-0.5)*14; lastMeas=meas; var K=(sigma*sigma)/((sigma*sigma)+R); mean=mean+K*(meas-mean); sigma=Math.sqrt((1-K)*sigma*sigma); readout.innerHTML='<strong>Peeked!</strong> Sensor said '+meas.toFixed(1)+' (truth is 68 — sensors lie a little). With K = '+K.toFixed(2)+' you moved part-way toward it and your uncertainty shrank to ±'+sigma.toFixed(1)+'. That K formula? That <em>is</em> the Kalman gain — see Part 2.'; draw(); };
+  document.getElementById('btnResetBelief').onclick=function(){ mean=50; sigma=6; lastMeas=null; readout.textContent='Reset. Guess 50, truth 68, ±6. Peek to shrink, predict to grow.'; draw(); };
+  draw();
+})();
+
+// ---------- Playground 2: Trust dial tracker ----------
+(function(){
+  var cv=document.getElementById('trackCanvas'), ctx=cv.getContext('2d');
+  var K=0.35, noise=8, speed=1, running=true, t=0, est=50, hist=[], measBuf=[];
+  var rawErr=0, estErr=0, n=0;
+  function step(){
+    t+=0.09*speed;
+    var truth=50+36*Math.sin(t)+10*Math.sin(t*0.37+1.2);
+    truth=Math.max(4,Math.min(96,truth));
+    var meas=truth+(Math.random()-0.5)*2*noise*1.4;
+    // prediction = previous estimate (assume roughly stays), then blend
+    var pred=est; est=pred+K*(meas-pred);
+    measBuf.push(meas); if(measBuf.length>8) measBuf.shift();
+    var ma=measBuf.reduce(function(a,b){return a+b;},0)/measBuf.length;
+    hist.push({tr:truth, me:meas, es:est, ma:ma}); if(hist.length>110) hist.shift();
+    rawErr+=Math.pow(meas-truth,2); estErr+=Math.pow(est-truth,2); n++;
+    draw(); updateStats();
+  }
+  function y(v){ return cv.height-28 - (v/100)*(cv.height-56); }
+  function draw(){
+    var W=cv.width,H=cv.height; ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='rgba(100,116,139,.25)'; ctx.lineWidth=1;
+    [25,50,75].forEach(function(v){ ctx.beginPath(); ctx.moveTo(10,y(v)); ctx.lineTo(W-10,y(v)); ctx.stroke(); });
+    if(hist.length<2) return;
+    var xStep=(W-20)/109;
+    function line(key,color,width,dash){ ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=width; ctx.setLineDash(dash||[]); hist.forEach(function(p,i){ var px=10+i*xStep, py=y(Math.max(-8,Math.min(108,p[key]))); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); }); ctx.stroke(); ctx.setLineDash([]); }
+    line('ma','#94A3B8',2,[5,4]);
+    // measurements as dots
+    ctx.fillStyle='#EA580C'; hist.forEach(function(p,i){ if(i%1===0){ ctx.beginPath(); ctx.arc(10+i*xStep, y(Math.max(-8,Math.min(108,p.me))),3.2,0,Math.PI*2); ctx.fill(); }});
+    line('tr','#182230',3); line('es','#0F766E',3.5);
+  }
+  function updateStats(){
+    if(n<5) return;
+    var r=Math.sqrt(rawErr/n), e=Math.sqrt(estErr/n);
+    document.getElementById('rmseRaw').textContent=r.toFixed(1);
+    document.getElementById('rmseEst').textContent=e.toFixed(1);
+    var v=document.getElementById('verdict');
+    if(K<=0.05) v.textContent='Frozen — pure lag';
+    else if(K>=0.95) v.textContent='Copying the noise';
+    else if(e<r*0.75) v.textContent='✓ Nicely tuned';
+    else if(e<r) v.textContent='Better than raw';
+    else v.textContent='Worse than raw — retune!';
+  }
+  var timer=setInterval(function(){ if(running) step(); },110);
+  function bindSlider(id,out,fn,fmt){ var el=document.getElementById(id), o=document.getElementById(out); el.addEventListener('input',function(){ var v=parseFloat(el.value); o.textContent=fmt(v); fn(v); }); }
+  bindSlider('kSlider','kOut',function(v){K=v;},function(v){return v.toFixed(2);});
+  bindSlider('noiseSlider','noiseOut',function(v){noise=v;},function(v){return v;});
+  bindSlider('speedSlider','speedOut',function(v){speed=v;},function(v){return v.toFixed(1)+'×';});
+  document.querySelectorAll('[data-k]').forEach(function(b){ b.addEventListener('click',function(){ K=parseFloat(b.getAttribute('data-k')); document.getElementById('kSlider').value=K; document.getElementById('kOut').textContent=K.toFixed(2); document.querySelectorAll('[data-k]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); }); });
+  document.getElementById('btnPause').onclick=function(){ running=!running; this.textContent=running?'⏸ Pause':'▶ Play'; };
+  document.getElementById('btnResetTrack').onclick=function(){ hist=[]; measBuf=[]; rawErr=0; estErr=0; n=0; t=0; est=50; document.getElementById('verdict').textContent='Warming up…'; };
+  for(var i=0;i<30;i++) step();
+})();
+
+// ---------- Quiz ----------
+function wireQuiz(cls, fbId, okMsg, noMsg){
+  document.querySelectorAll('.'+cls).forEach(function(b){ b.addEventListener('click',function(){
+    var fb=document.getElementById(fbId); fb.style.display='block';
+    if(b.getAttribute('data-correct')==='1'){ fb.innerHTML='✓ <strong>Exactly.</strong> '+okMsg; fb.style.background='var(--teal-bg)'; }
+    else { fb.innerHTML='✕ <strong>Not quite.</strong> '+noMsg; fb.style.background='var(--orange-bg)'; }
+  });});
+}
+wireQuiz('quiz-btn','quizFb','Noisier sensor → lower K. You lean harder on your prediction/model. A Kalman filter makes exactly this adjustment automatically, every step.','If the sensor got worse and you listened to it <em>more</em>, you\'d chase noise. K should fall — trust the prediction more.');
+wireQuiz('quiz-btn2','quizFb2','Each prediction adds process uncertainty. No measurement arrives to shrink it, so the blob only grows. That\'s why GPS-only dead reckoning drifts.','Predictions carry uncertainty too — the world moves while you\'re blind. Without a measurement to shrink it, the blob must grow.');
+wireQuiz('quiz-btn3','quizFb3','K = P⁻/(P⁻+R). Huge P⁻ makes the fraction approach 1 — after a dropout the filter quite rightly leans almost entirely on the first fresh measurement. Try it with Dropout in Playground 4 and watch the live K spike.','Protecting the prediction sounds safe, but after a long blindness your prediction is mostly guesswork — P says so. The gain formula knows it, even if your instincts don\'t.');
+wireQuiz('quiz-btn4','quizFb4','Small R inflates K = P⁻/(P⁻+R) at every step, so each noisy reading drags the estimate around. The filter cannot detect the lie — it believes the R you gave it. That\'s why R should come from measuring the real sensor.','The filter has no lie detector: R is taken on faith. Claim the sensor is great and K rises, so noise flows straight into the estimate.');
+wireQuiz('quiz-btn5','quizFb5','One Gaussian blob can be tuned, widened, and re-centred — but it can never be in two places at once. Two competing hypotheses need a different representation entirely: that\'s the particle filter, Part 4.','Harder manoeuvres and a noisier sensor are exactly what Q and R are for — raise Q, correct R, and the filter adapts. The two-corridor problem is a shape problem, not a tuning problem.');
+
+// ---------- Shared: Gaussian noise (Box–Muller) ----------
+function gaussRand(){ var u=0,v=0; while(u===0) u=Math.random(); while(v===0) v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+// ---------- Playground 3: Kalman, one cycle at a time ----------
+(function(){
+  var cv=document.getElementById('kfStepCanvas'); if(!cv) return; var ctx=cv.getContext('2d');
+  var ex=20, ev=2.0, pxx=25, pxv=0, pvv=4, tx=20, tv=2.4, stepN=0, lastMeas=null, lastK=null, lastInnov=null, auto=false, timer=null;
+  function Q(){ return parseFloat(document.getElementById('kfQ').value); }
+  function R(){ return parseFloat(document.getElementById('kfR').value); }
+  function draw(){
+    var W=cv.width,H=cv.height; ctx.clearRect(0,0,W,H);
+    var sigma=Math.sqrt(Math.max(pxx,0.01)), base=H-56;
+    var X=function(v){ return 30+(W-60)*((v+10)/120); };
+    ctx.strokeStyle='#CBD5E1'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(30,base); ctx.lineTo(W-30,base); ctx.stroke();
+    ctx.fillStyle='#64748B'; ctx.font='12px JetBrains Mono'; ctx.textAlign='center';
+    [0,25,50,75,100].forEach(function(v){ ctx.fillText(v,X(v),base+22); ctx.beginPath(); ctx.moveTo(X(v),base); ctx.lineTo(X(v),base+6); ctx.stroke(); });
+    ctx.beginPath();
+    for(var x=-10;x<=110;x+=0.5){ var y=Math.exp(-Math.pow(x-ex,2)/(2*sigma*sigma)); var px=X(x), py=base-y*(H-115); if(x===-10) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+    ctx.strokeStyle='#0F766E'; ctx.lineWidth=3; ctx.stroke(); ctx.lineTo(X(110),base); ctx.lineTo(X(-10),base); ctx.closePath(); ctx.fillStyle='rgba(15,118,110,0.16)'; ctx.fill();
+    ctx.strokeStyle='#0F766E'; ctx.setLineDash([6,5]); ctx.beginPath(); ctx.moveTo(X(ex),base); ctx.lineTo(X(ex),36); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#0F766E'; ctx.font='700 13px Public Sans'; ctx.fillText('x̂ '+ex.toFixed(1)+'  ±'+sigma.toFixed(1), X(ex), 24);
+    ctx.fillStyle='#182230'; ctx.beginPath(); ctx.arc(X(tx),base-10,8,0,Math.PI*2); ctx.fill();
+    ctx.font='700 12px Public Sans'; ctx.fillText('TRUTH '+tx.toFixed(0), X(tx), base+38);
+    if(lastMeas!==null){ ctx.fillStyle='#EA580C'; ctx.beginPath(); ctx.arc(X(lastMeas),base-10,6,0,Math.PI*2); ctx.fill(); ctx.font='700 12px Public Sans'; ctx.fillText('z: '+lastMeas.toFixed(0), X(lastMeas), 46); }
+    document.getElementById('kfX').textContent=ex.toFixed(1);
+    document.getElementById('kfV').textContent=ev.toFixed(2);
+    document.getElementById('kfP').textContent=pxx.toFixed(1);
+    document.getElementById('kfInnov').textContent=(lastInnov===null?'—':lastInnov.toFixed(1));
+    document.getElementById('kfStepN').textContent=stepN;
+    document.getElementById('kfTruth').textContent=tx.toFixed(0);
+    if(lastK!==null){ document.getElementById('kfKVal').textContent=lastK.toFixed(2); document.getElementById('kfKBar').style.width=(lastK*100).toFixed(0)+'%'; }
+  }
+  var readout=document.getElementById('kfReadout');
+  function doPredict(){
+    tx+=tv; ex=ex+ev;
+    var nxx=pxx+2*pxv+pvv+Q(), nxv=pxv+pvv, nvv=pvv+Q()*0.15; pxx=nxx; pxv=nxv; pvv=nvv;
+    stepN++; lastMeas=null;
+    readout.innerHTML='<strong>Predicted.</strong> Truth moved +'+tv.toFixed(1)+', you rolled forward by your v̂ = '+ev.toFixed(2)+'. P grew to '+pxx.toFixed(1)+' (Q added). Gap to truth is now '+Math.abs(tx-ex).toFixed(1)+' — predictions alone always drift.';
+    draw();
+  }
+  function doUpdate(){
+    var Rr=R(); var z=tx+gaussRand()*Math.sqrt(Rr); lastMeas=z;
+    var S=pxx+Rr; var kx=pxx/S, kv=pxv/S; var innov=z-ex; lastInnov=innov; lastK=kx;
+    ex=ex+kx*innov; ev=ev+kv*innov;
+    var nxx=(1-kx)*pxx, nxv=(1-kx)*pxv, nvv=pvv-kv*pxv; pxx=nxx; pxv=nxv; pvv=nvv;
+    readout.innerHTML='<strong>Updated.</strong> Sensor said '+z.toFixed(1)+' (truth '+tx.toFixed(0)+'). Surprise = '+innov.toFixed(1)+'. K = P⁻/(P⁻+R) = <b>'+kx.toFixed(2)+'</b>, so you moved '+Math.abs(kx*innov).toFixed(1)+' toward it and P shrank to '+pxx.toFixed(1)+'. Notice: velocity was corrected too, via the P cross-term — position clues teach you about speed.';
+    draw();
+  }
+  document.getElementById('kfPredict').onclick=doPredict;
+  document.getElementById('kfUpdate').onclick=doUpdate;
+  document.getElementById('kfStepReset').onclick=function(){ ex=20; ev=2.0; pxx=25; pxv=0; pvv=4; tx=20; stepN=0; lastMeas=null; lastK=null; lastInnov=null; document.getElementById('kfKVal').textContent='—'; document.getElementById('kfKBar').style.width='0%'; readout.innerHTML='<strong>Reset.</strong> Guess 20 at v̂ = 2.0, truth 20 moving at 2.4 — a small, permanent model error for Q to absorb. Predict, then update, and watch K breathe.'; draw(); };
+  var autoBtn=document.getElementById('kfAuto');
+  autoBtn.onclick=function(){ auto=!auto; autoBtn.textContent=auto?'⏸ Stop auto-run':'▶ Auto-run cycle'; if(auto){ timer=setInterval(function(){ doPredict(); doUpdate(); },750); } else { clearInterval(timer); } };
+  function bind(id,out){ var el=document.getElementById(id),o=document.getElementById(out); el.addEventListener('input',function(){ o.textContent=el.value; }); }
+  bind('kfQ','kfQOut'); bind('kfR','kfROut');
+  draw();
+})();
+
+// ---------- Playground 4: Kalman live tracker ----------
+(function(){
+  var cv=document.getElementById('kfTrackCanvas'); if(!cv) return; var ctx=cv.getContext('2d');
+  var running=true, t=0, hist=[], glitch=false, dropout=0;
+  var ex=50, ev=0, pxx=36, pxv=0, pvv=9, fest=50, lastK=0;
+  var seK=0, seF=0, seR=0, n=0;
+  function Q(){ return parseFloat(document.getElementById('kf2Q').value); }
+  function R(){ return parseFloat(document.getElementById('kf2R').value); }
+  function Noise(){ return parseFloat(document.getElementById('kf2Noise').value); }
+  function step(){
+    t+=0.09;
+    var truth=50+36*Math.sin(t)+10*Math.sin(t*0.37+1.2); truth=Math.max(4,Math.min(96,truth));
+    var meas=truth+gaussRand()*Noise(); if(glitch){ meas+= (Math.random()>0.5?48:-48); glitch=false; }
+    // Kalman predict (dt = 1 step)
+    ex=ex+ev; var nxx=pxx+2*pxv+pvv+Q(), nxv=pxv+pvv, nvv=pvv+Q()*0.2; pxx=nxx; pxv=nxv; pvv=nvv;
+    var shownMeas=meas;
+    if(dropout>0){ dropout--; shownMeas=null; }
+    else {
+      var Rr=R(); var S=pxx+Rr; var kx=pxx/S, kv=pxv/S; var innov=meas-ex; lastK=kx;
+      ex=ex+kx*innov; ev=ev+kv*innov;
+      var uxx=(1-kx)*pxx, uxv=(1-kx)*pxv, uvv=pvv-kv*pxv; pxx=uxx; pxv=uxv; pvv=uvv;
+      fest=fest+0.35*(meas-fest);
+    }
+    hist.push({tr:truth, me:shownMeas, kf:ex, fx:fest, p:Math.sqrt(Math.max(pxx,0))}); if(hist.length>110) hist.shift();
+    if(shownMeas!==null){ seR+=Math.pow(shownMeas-truth,2); }
+    seK+=Math.pow(ex-truth,2); seF+=Math.pow(fest-truth,2); n++;
+    draw(); stats();
+  }
+  function Y(v){ return cv.height-28-(v/100)*(cv.height-56); }
+  function draw(){
+    var W=cv.width,H=cv.height; ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='rgba(100,116,139,.25)'; ctx.lineWidth=1;
+    [25,50,75].forEach(function(v){ ctx.beginPath(); ctx.moveTo(10,Y(v)); ctx.lineTo(W-10,Y(v)); ctx.stroke(); });
+    if(hist.length<2) return;
+    var xs=(W-20)/109;
+    function line(key,color,width,dash){ ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=width; ctx.setLineDash(dash||[]); var started=false; hist.forEach(function(p,i){ if(p[key]===null) { started=false; return; } var px=10+i*xs, py=Y(Math.max(-8,Math.min(108,p[key]))); if(!started){ ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py); }); ctx.stroke(); ctx.setLineDash([]); }
+    line('fx','#94A3B8',2,[5,4]);
+    ctx.fillStyle='#EA580C'; hist.forEach(function(p,i){ if(p.me!==null){ ctx.beginPath(); ctx.arc(10+i*xs, Y(Math.max(-8,Math.min(108,p.me))),3.2,0,Math.PI*2); ctx.fill(); }});
+    line('tr','#182230',3); line('kf','#0F766E',3.5);
+    // uncertainty band around Kalman (latest ±2σ as translucent strip on the tail)
+    var last=hist[hist.length-1];
+    ctx.fillStyle='rgba(15,118,110,0.10)';
+    ctx.fillRect(10, Y(Math.min(108,last.kf+2*last.p)), W-20, Math.max(2, Y(Math.max(-8,last.kf-2*last.p))-Y(Math.min(108,last.kf+2*last.p))));
+  }
+  function stats(){
+    if(n<5) return;
+    var rk=Math.sqrt(seK/n), rf=Math.sqrt(seF/n), rr=Math.sqrt(seR/Math.max(1,n));
+    document.getElementById('kf2RmseK').textContent=rk.toFixed(1);
+    document.getElementById('kf2RmseF').textContent=rf.toFixed(1);
+    document.getElementById('kf2RmseR').textContent=rr.toFixed(1);
+    document.getElementById('kf2K').textContent=dropout>0?'— (blind)':lastK.toFixed(2);
+    document.getElementById('kf2P').textContent=pxx.toFixed(1);
+    var v=document.getElementById('kf2Verdict');
+    if(dropout>0) v.textContent='Blind — P climbing';
+    else if(rk<rf*0.85) v.textContent='✓ Kalman winning';
+    else if(rk<rf) v.textContent='Kalman ahead, barely';
+    else v.textContent='Fixed-K ahead — retune Q/R!';
+  }
+  setInterval(function(){ if(running) step(); },110);
+  function bind(id,out){ var el=document.getElementById(id),o=document.getElementById(out); el.addEventListener('input',function(){ o.textContent=el.value; }); }
+  bind('kf2Q','kf2QOut'); bind('kf2R','kf2ROut'); bind('kf2Noise','kf2NoiseOut');
+  function setQR(q,r){ document.getElementById('kf2Q').value=q; document.getElementById('kf2QOut').textContent=q; document.getElementById('kf2R').value=r; document.getElementById('kf2ROut').textContent=r; }
+  var presets={ honest:[0.8,64], smug:[0.05,64], anxious:[4,64] };
+  var readouts={ honest:'<strong>Honest Q / R.</strong> Q matches how hard the target manoeuvres, R matches the sensor (noise 8 → R ≈ 64). This is the baseline a tuned filter should beat fixed-K from.', smug:'<strong>Smug filter.</strong> Q = 0.05: the filter barely admits its model can be wrong, so P and K stay tiny. Watch it lag at every turn — it has stopped listening.', anxious:'<strong>Anxious filter.</strong> Q = 4: P inflates every step, K stays high, and the teal line starts chasing the orange dots. Smoothness was the price of never trusting yourself.' };
+  document.querySelectorAll('[data-preset]').forEach(function(b){ b.addEventListener('click',function(){ var p=presets[b.getAttribute('data-preset')]; setQR(p[0],p[1]); document.getElementById('kf2Readout').innerHTML=readouts[b.getAttribute('data-preset')]; document.querySelectorAll('[data-preset]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); }); });
+  document.getElementById('kfGlitch').onclick=function(){ glitch=true; document.getElementById('kf2Readout').innerHTML='<strong>Glitch armed.</strong> The next measurement will be ~48 units off. Watch both estimators get yanked — and how fast each recovers. A real system would gate this reading out entirely (see §6).'; };
+  document.getElementById('kfDropout').onclick=function(){ dropout=12; document.getElementById('kf2Readout').innerHTML='<strong>Dropout!</strong> Twelve steps with no measurements: pure prediction. P is climbing the whole time — so when the sensor returns, K should spike. Check the live K stat the moment the orange dots come back.'; };
+  document.getElementById('kf2Pause').onclick=function(){ running=!running; this.textContent=running?'⏸ Pause':'▶ Play'; };
+  document.getElementById('kf2Reset').onclick=function(){ hist=[]; seK=0; seF=0; seR=0; n=0; t=0; ex=50; ev=0; pxx=36; pxv=0; pvv=9; fest=50; dropout=0; document.getElementById('kf2Verdict').textContent='Warming up…'; };
+  for(var i=0;i<30;i++) step();
+})();
+
+// ---------- Equation Lab (§2): play with the five equations ----------
+(function(){
+  var cv=document.getElementById('eqCanvas'); if(!cv) return; var ctx=cv.getContext('2d');
+  var predX=42;
+  function val(id){ return parseFloat(document.getElementById(id).value); }
+  function fmt(n,d){ return n.toFixed(d===undefined?1:d); }
+  function compute(){
+    var P0=val('eqP'), Qv=val('eqQ'), Rv=val('eqR'), z=val('eqZ');
+    var Pm=P0+Qv; var K=Pm/(Pm+Rv); var innov=z-predX; var xPost=predX+K*innov; var Pnew=(1-K)*Pm; var move=K*innov;
+    return {P0:P0,Q:Qv,R:Rv,z:z,Pm:Pm,K:K,innov:innov,xPost:xPost,Pnew:Pnew,move:move,sigPm:Math.sqrt(Pm),sigR:Math.sqrt(Rv),sigNew:Math.sqrt(Pnew)};
+  }
+  function peak(sigma){ return Math.max(26, Math.min(148, 430/Math.max(sigma,1.5))); }
+  function draw(){
+    var s=compute(); var W=cv.width,H=cv.height; ctx.clearRect(0,0,W,H);
+    var base=H-54; var X=function(v){ return 40+(W-80)*(v/100); };
+    // axis
+    ctx.strokeStyle='#CBD5E1'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(40,base); ctx.lineTo(W-40,base); ctx.stroke();
+    ctx.fillStyle='#64748B'; ctx.font='12px JetBrains Mono'; ctx.textAlign='center';
+    [0,25,50,75,100].forEach(function(v){ ctx.fillText(v,X(v),base+22); ctx.beginPath(); ctx.moveTo(X(v),base); ctx.lineTo(X(v),base+6); ctx.stroke(); });
+    function blob(cx,sigma,color,fillA,lw){
+      var pk=peak(sigma); ctx.beginPath();
+      for(var x=0;x<=100;x+=0.6){ var y=Math.exp(-Math.pow(x-cx,2)/(2*sigma*sigma)); var px=X(x), py=base-y*pk; if(x===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+      ctx.strokeStyle=color; ctx.lineWidth=lw||2.5; ctx.stroke();
+      ctx.lineTo(X(100),base); ctx.lineTo(X(0),base); ctx.closePath(); ctx.fillStyle=fillA; ctx.fill();
+    }
+    // order: prediction, measurement, result on top
+    blob(predX,s.sigPm,'#0F766E','rgba(15,118,110,0.10)',2.5);
+    blob(s.z,s.sigR,'#EA580C','rgba(234,88,12,0.12)',2.5);
+    blob(s.xPost,s.sigNew,'#182230','rgba(24,34,48,0.10)',3.5);
+    // centre lines
+    function vline(cx,color,dash){ ctx.strokeStyle=color; ctx.lineWidth=2; ctx.setLineDash(dash||[]); ctx.beginPath(); ctx.moveTo(X(cx),base); ctx.lineTo(X(cx),base-peak(cx===predX?s.sigPm:(cx===s.z?s.sigR:s.sigNew))-8); ctx.stroke(); ctx.setLineDash([]); }
+    vline(predX,'#0F766E',[6,5]); vline(s.xPost,'#182230',[]);
+    // blend arrow from pred to result to measurement (at mid height)
+    var ay=base-18;
+    ctx.strokeStyle='#182230'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(X(predX),ay); ctx.lineTo(X(s.xPost),ay); ctx.stroke();
+    ctx.fillStyle='#182230'; ctx.beginPath(); ctx.arc(X(s.xPost),ay,5,0,Math.PI*2); ctx.fill();
+    // measurement draggable dot
+    ctx.fillStyle='#EA580C'; ctx.beginPath(); ctx.arc(X(s.z),base-10,11,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='900 13px Public Sans'; ctx.textAlign='center'; ctx.fillText('z',X(s.z),base-5);
+    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(X(s.z),base-10,11,0,Math.PI*2); ctx.stroke();
+    // labels
+    ctx.font='700 13px Public Sans';
+    ctx.fillStyle='#0F766E'; ctx.fillText('pred 42  ±'+fmt(s.sigPm), X(predX), 18);
+    ctx.fillStyle='#EA580C'; ctx.fillText('z = '+fmt(s.z,0)+'  ±'+fmt(s.sigR), X(s.z), 44);
+    ctx.fillStyle='#182230'; ctx.font='800 14px Public Sans'; ctx.fillText('x̂ = '+fmt(s.xPost)+'  ±'+fmt(s.sigNew), X(s.xPost), 70);
+    // K annotation
+    ctx.font='700 12px JetBrains Mono'; ctx.fillStyle='#5E6B7E';
+    ctx.fillText('moved '+(s.K*100).toFixed(0)+'% of the surprise', (X(predX)+X(s.z))/2, base+38);
+    updateText(s);
+  }
+  function setTxt(id,t){ var el=document.getElementById(id); if(el) el.textContent=t; }
+  function updateText(s){
+    setTxt('eqShowP0',fmt(s.P0,0)); setTxt('eqShowQ',fmt(s.Q,0)); setTxt('eqShowPminus',fmt(s.Pm,0));
+    setTxt('eqShowPminus2',fmt(s.Pm,0)); setTxt('eqShowPminus3',fmt(s.Pm,0)); setTxt('eqShowPminus4',fmt(s.Pm,0));
+    setTxt('eqShowR',fmt(s.R,0)); setTxt('eqShowK',fmt(s.K,2)); setTxt('eqShowK2',fmt(s.K,2)); setTxt('eqShowK3',fmt(s.K,2));
+    setTxt('eqShowZ',fmt(s.z,0)); setTxt('eqShowInnov',(s.innov>=0?'+':'')+fmt(s.innov,0)); setTxt('eqShowInnov2',fmt(s.innov,0));
+    setTxt('eqShowX',fmt(s.xPost)); setTxt('eqShowPnew',fmt(s.Pnew));
+    setTxt('eqMovePct',(s.K*100).toFixed(0)+'% of the way'); setTxt('eqShrinkFrom',fmt(s.Pm,0)); setTxt('eqShrinkTo',fmt(s.Pnew));
+    setTxt('eqKVal',fmt(s.K,2)); var kb=document.getElementById('eqKBar'); if(kb) kb.style.width=(s.K*100)+'%';
+    var rb=document.getElementById('eqRBar'); if(rb) rb.style.width=((1-s.K)*100)+'%';
+    setTxt('eqStatPminus',fmt(s.Pm,0)); setTxt('eqStatK',fmt(s.K,2)); setTxt('eqStatX',fmt(s.xPost)); setTxt('eqStatP',fmt(s.Pnew));
+    setTxt('eqStatInnov',(s.innov>=0?'+':'')+fmt(s.innov,0)); setTxt('eqStatMove',(s.move>=0?'+':'')+fmt(s.move));
+    setTxt('eqPOut',fmt(s.P0,0)); setTxt('eqQOut',fmt(s.Q,0)); setTxt('eqROut2',fmt(s.R,0)); setTxt('eqZOut',fmt(s.z,0));
+    var ro=document.getElementById('eqReadout');
+    if(ro && !ro.dataset.presetLock){
+      if(s.K>=0.85) ro.innerHTML='<strong>K = '+fmt(s.K,2)+' — sensor wins.</strong> Your doubt ('+fmt(s.Pm,0)+') dwarfs the sensor\'s ('+fmt(s.R,0)+'), so the result blob lands almost on z and shrinks hard. This is the first measurement after a dropout.';
+      else if(s.K<=0.18) ro.innerHTML='<strong>K = '+fmt(s.K,2)+' — you barely budge.</strong> You are confident (P⁻ = '+fmt(s.Pm,0)+') and/or the sensor is noisy (R = '+fmt(s.R,0)+'), so even a surprise of '+fmt(s.innov,0)+' only moves you '+fmt(Math.abs(s.move))+' — and P hardly shrinks. Confidence is stubborn.';
+      else if(Math.abs(s.innov)<4) ro.innerHTML='<strong>Tiny surprise.</strong> z is almost where you predicted, so x̂ hardly moves no matter what K is — but P still shrinks to '+fmt(s.Pnew)+'. Agreement is information too: it makes you surer without moving you.';
+      else ro.innerHTML='<strong>K = '+fmt(s.K,2)+' — a genuine blend.</strong> You moved '+fmt(Math.abs(s.move))+' of the '+fmt(Math.abs(s.innov))+' surprise ('+(s.K*100).toFixed(0)+'%) and P fell '+fmt(s.Pm,0)+' → '+fmt(s.Pnew)+'. Try making P⁻ exactly equal R — K should become exactly 0.50.';
+    }
+  }
+  ['eqP','eqQ','eqR','eqZ'].forEach(function(id){ document.getElementById(id).addEventListener('input',function(){ var ro=document.getElementById('eqReadout'); if(ro) delete ro.dataset.presetLock; draw(); }); });
+  // drag measurement dot
+  var dragging=false;
+  function posToVal(e){ var r=cv.getBoundingClientRect(); var px=(e.clientX-r.left)/r.width*cv.width; var v=((px-40)/(cv.width-80))*100; return Math.max(8,Math.min(92,Math.round(v))); }
+  function onDown(e){ var v=posToVal(e); var s=compute(); if(Math.abs(v-s.z)<14 || e.target===cv){ dragging=true; document.getElementById('eqZ').value=v; var ro=document.getElementById('eqReadout'); if(ro) delete ro.dataset.presetLock; draw(); if(cv.setPointerCapture && e.pointerId!==undefined){ try{cv.setPointerCapture(e.pointerId);}catch(_){} } } }
+  cv.addEventListener('pointerdown',onDown);
+  cv.addEventListener('pointermove',function(e){ if(!dragging) return; document.getElementById('eqZ').value=posToVal(e); draw(); });
+  window.addEventListener('pointerup',function(){ dragging=false; });
+  // presets: [P, Q, R, z, message]
+  var presets={
+    lost:[160,65,16,68,'<strong>“I’m lost” preset.</strong> P⁻ = 225 vs R = 16 — K = 0.93. You jump almost all the way to the sensor and P collapses 225 → 15. When you know nothing, one good look is worth a lot.'],
+    confident:[4,5,64,68,'<strong>“I’m confident” preset.</strong> P⁻ = 9 vs R = 64 — K = 0.12. A measurement 26 away moves you only ~3. If that confidence is earned, great. If it is Q set too low, this is the smug-filter trap from §4.'],
+    badsensor:[28,36,225,68,'<strong>Terrible sensor preset.</strong> R = 225 smears the orange blob across the chart. K = 0.22, so the filter politely listens — then mostly ignores it. Notice the result blob is still narrower than your prediction: even a bad clue helps a little.'],
+    greatsensor:[64,36,9,68,'<strong>Great sensor preset.</strong> R = 9 — a needle-sharp orange blob. K = 0.92 and x̂ lands at ~66, almost on z. A precise sensor earns trust automatically; nobody had to grant it.'],
+    wild:[64,36,36,92,'<strong>Wild surprise preset.</strong> Same K as the default (0.74), but the surprise is +50 instead of +26 — so you move +37 instead of +19, while P shrinks by exactly the same proportion. Surprise scales the move; the ratio scales the shrink.'],
+    reset:[64,36,36,68,'<strong>Reset to the §1 example.</strong> Prediction 42, measurement 68, P⁻ = 100, R = 36, K = 0.74, x̂ = 61.1. Now break it: try to land x̂ exactly on 50, or make K exactly 0.50.']
+  };
+  document.querySelectorAll('[data-eqpreset]').forEach(function(b){ b.addEventListener('click',function(){
+    var p=presets[b.getAttribute('data-eqpreset')]; if(!p) return;
+    document.getElementById('eqP').value=p[0]; document.getElementById('eqQ').value=p[1]; document.getElementById('eqR').value=p[2]; document.getElementById('eqZ').value=p[3];
+    var ro=document.getElementById('eqReadout'); ro.dataset.presetLock='1'; ro.innerHTML=p[4];
+    document.querySelectorAll('[data-eqpreset]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active');
+    draw(); // draw calls updateText which respects presetLock for readout
+    // re-assert preset message after updateText (it does not overwrite when locked, but keep order safe)
+    ro.innerHTML=p[4];
+  }); });
+  draw();
+})();
+</script>
+</body>
+</html>
